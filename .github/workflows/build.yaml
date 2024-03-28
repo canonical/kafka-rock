@@ -6,6 +6,11 @@ concurrency:
 
 on:
   pull_request:
+  workflow_call:
+    outputs:
+      rock:
+        description: "The rock output of build process."
+        value: ${{ jobs.build.outputs.rock }}
 
 jobs:
   lint:
@@ -14,6 +19,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Install tox
+        run: python3 -m pip install tox
+      - name: YAML Lint
+        run: tox -e lint
 
   build:
     runs-on: ubuntu-latest
@@ -30,6 +39,22 @@ jobs:
         run: |
           sudo snap install yq
           sudo snap install rockcraft --classic --edge
+      - name: Build ROCK
+        id: build
+        run: |
+          VERSION=$(yq '.version' rockcraft.yaml)
+
+          rockcraft pack --verbose
+
+          echo "rock=kafka_${VERSION}_amd64.rock" >> $GITHUB_OUTPUT
+
+      - name: Upload locally built ROCK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: kafka
+          path: ${{ steps.build.outputs.rock }}
+    outputs:
+      rock: ${{ steps.build.outputs.rock }}
 
   test:
     name: Test Image
@@ -42,7 +67,28 @@ jobs:
       - name: Install skopeo
         run: |
           sudo snap install --devmode --channel edge skopeo
+      - uses: actions/download-artifact@v3
+        with:
+          name: kafka
       - name: Test Image
         run: |
+
+          sudo skopeo --insecure-policy copy \
+            oci-archive:${{ needs.build.outputs.rock }} \
+            docker-daemon:kafka:latest
+
+          ./tests/ie-tests.sh > test.out
           
-          echo "dummy test"
+          cat test.out
+          
+          N_TESTS=$(grep "^Tests: [0-9]*" test.out | cut -d ":" -f 2 | xargs)
+          SUCCESS=$(grep "\*\*\* SUCCESS \*\*\*" -c test.out)
+          FAILURE=$(grep "\*\*\* FAILED \*\*\*" -c test.out) 
+          
+          if [ "$N_TESTS" -eq "$SUCCESS" ] && [ "$FAILURE" -eq "0" ]; 
+          then 
+            echo "Test Passed!"
+          else
+            echo "There has been failure in the tests! Check logs."
+            exit 1
+          fi

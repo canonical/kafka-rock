@@ -1,0 +1,41 @@
+name: Trivy Security Scanner
+on:
+  push:
+    branches:
+      - 3-22.04
+  pull_request:
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+  scan:
+    name: Trivy scan
+    needs: build
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install skopeo
+        run: |
+          sudo snap install --devmode --channel edge skopeo
+      - uses: actions/download-artifact@v3
+        with:
+          name: zookeeper
+      - name: Import locally
+        run: |
+          sudo skopeo --insecure-policy copy \
+            oci-archive:${{ needs.build.outputs.rock }} \
+            docker-daemon:trivy/zookeeper:test
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'trivy/zookeeper:test'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'MEDIUM,HIGH,CRITICAL'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
