@@ -79,26 +79,19 @@ jobs:
 
           ./tests/ie-tests.sh > test.out
           
-          echo "here-first"
-          
           cat test.out
           
-          echo "here-second"
-          
           N_TESTS=$(grep "^Tests: [0-9]*" test.out | cut -d ":" -f 2 | xargs)
-
-          echo "here-third"
-
-          SUCCESS=$(grep "\*\*\* SUCCESS \*\*\*" -c test.out)
-
-          echo "here-fourth"
-
-          FAILURE=$(grep "\*\*\* FAILED \*\*\*" -c test.out) 
+          SUCCESS=$(grep "\*\*\* SUCCESS \*\*\*" -c test.out || exit 0)
+          FAILURE=$(grep "\*\*\* FAILED \*\*\*" -c test.out || exit 0) 
           
-          echo "here:"
-          echo "$N_TESTS"
-          echo "$SUCCESS"
-          echo "$FAILURE"
+          echo "**************"
+          echo " Test Results"
+          echo "**************"
+          echo "N_TESTS: $N_TESTS"
+          echo "  SUCCESS: $SUCCESS"
+          echo "  FAILURE: $FAILURE"
+          echo "**************"
           
           if [ "$N_TESTS" -eq "$SUCCESS" ] && [ "$FAILURE" -eq "0" ]; 
           then 
