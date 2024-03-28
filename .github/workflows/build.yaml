@@ -1,0 +1,48 @@
+name: Build ROCK
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - lint
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup LXD
+        uses: canonical/setup-lxd@main
+      - name: Install dependencies
+        id: install
+        run: |
+          sudo snap install yq
+          sudo snap install rockcraft --classic --edge
+
+  test:
+    name: Test Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install skopeo
+        run: |
+          sudo snap install --devmode --channel edge skopeo
+      - name: Test Image
+        run: |
+          
+          echo "dummy test"
