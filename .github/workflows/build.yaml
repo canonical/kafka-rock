@@ -83,8 +83,16 @@ jobs:
           
           cat test.out
           
+          echo "here-second"
+          
           N_TESTS=$(grep "^Tests: [0-9]*" test.out | cut -d ":" -f 2 | xargs)
+
+          echo "here-third"
+
           SUCCESS=$(grep "\*\*\* SUCCESS \*\*\*" -c test.out)
+
+          echo "here-fourth"
+
           FAILURE=$(grep "\*\*\* FAILED \*\*\*" -c test.out) 
           
           echo "here:"
