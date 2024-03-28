@@ -79,6 +79,8 @@ jobs:
 
           ./tests/ie-tests.sh > test.out
           
+          echo "here-first"
+          
           cat test.out
           
           N_TESTS=$(grep "^Tests: [0-9]*" test.out | cut -d ":" -f 2 | xargs)
