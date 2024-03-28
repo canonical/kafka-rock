@@ -13,7 +13,7 @@ jobs:
     with:
       jira-base-url: https://warthogs.atlassian.net
       jira-project-key: DPE
-      jira-component-names: zookeeper-k8s,rock
+      jira-component-names: kafka-k8s,rock
     secrets:
       jira-api-token: ${{ secrets.JIRA_API_TOKEN }}
       jira-user-email: ${{ secrets.JIRA_USER_EMAIL }}
