@@ -85,6 +85,11 @@ jobs:
           SUCCESS=$(grep "\*\*\* SUCCESS \*\*\*" -c test.out)
           FAILURE=$(grep "\*\*\* FAILED \*\*\*" -c test.out) 
           
+          echo "here:"
+          echo "$N_TESTS"
+          echo "$SUCCESS"
+          echo "$FAILURE"
+          
           if [ "$N_TESTS" -eq "$SUCCESS" ] && [ "$FAILURE" -eq "0" ]; 
           then 
             echo "Test Passed!"
