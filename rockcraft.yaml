@@ -70,6 +70,11 @@ parts:
       # Create configuration folder
       rm -r $CRAFT_PART_INSTALL/opt/kafka/config
       cp -r ./config/* $CRAFT_PART_INSTALL/etc/kafka/.
+      
+      # Generate configuration
+      sed -i "s:log.dirs=/tmp/kafka-logs:log.dirs=/var/lib/kafka:g" \
+        $CRAFT_PART_INSTALL/etc/kafka/server.properties
+
   non-root-user:
     plugin: nil
     after: [kafka]
