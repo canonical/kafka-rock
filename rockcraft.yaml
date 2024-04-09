@@ -1,0 +1,124 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+---
+name: kafka  # the name of your ROCK
+base: ubuntu@22.04  # the base environment for this ROCK
+version: '3.6.1'  # just for humans. Semantic versioning is recommended
+summary: Apache Kafka OCI Image  # 79 char long summary
+description: |
+  Apache Kafka Image from Canonical, based
+  on [Ubuntu](https://ubuntu.com/). Receives security updates for Apache
+  Kafka and Ubuntu. This repository is free to use and exempted from
+  per-user rate limits.
+
+  Apache Kafka is an open-source distributed event streaming platform for
+  high-performance data pipelines, streaming analytics and integrations.
+  Read more on the [Apache Kafka website](https://kafka.apache.org/).
+  This image requires the
+  [Apache Zookeeper image](https://hub.docker.com/r/ubuntu/zookeeper)
+  to run properly.
+license: Apache-2.0  # your application's SPDX license
+
+platforms:  # The platforms this ROCK should be built on and run on
+  amd64:
+
+environment:
+  JAVA_HOME: /usr/lib/jvm/java-18-openjdk-amd64
+  ZOOKEEPER_HOST: "zookeeper"
+  ZOOKEEPER_PORT: "2181"
+  KAFKA_LOG4J_OPTS:
+    "-Dlog4j.configuration=file:/etc/kafka/tools-log4j.properties"
+
+services:
+  kafka:
+    override: replace
+    command: >
+      sh -c
+      "/opt/kafka/bin/kafka-server-start.sh /etc/kafka/server.properties
+      --override zookeeper.connect=$ZOOKEEPER_HOST:$ZOOKEEPER_PORT"
+    startup: enabled
+    user: kafka
+    group: kafka
+    environment:
+      KAFKA_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/kafka/log4j.properties"
+
+parts:
+  kafka:
+    plugin: nil
+    source:
+      "https://github.com/canonical/central-uploader/releases/download\
+      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu0\
+      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu0-20240308100934.tgz"
+
+    overlay-packages:
+      - openjdk-18-jre-headless
+    overlay-script: |
+      # Removing cacerts
+      rm -vf usr/lib/jvm/java-18-openjdk-amd64/lib/security/cacerts
+
+    override-build: |
+      # Base directory skeleton
+      mkdir -p $CRAFT_PART_INSTALL/var/lib/pebble/default/
+      mkdir -p $CRAFT_PART_INSTALL/var/lib/kafka/
+      mkdir -p $CRAFT_PART_INSTALL/var/log/kafka/
+      mkdir -p $CRAFT_PART_INSTALL/opt/kafka/
+      mkdir -p $CRAFT_PART_INSTALL/etc/kafka/
+
+      # Copy executables
+      cp -r ./* $CRAFT_PART_INSTALL/opt/kafka
+
+      # Create configuration folder
+      rm -r $CRAFT_PART_INSTALL/opt/kafka/config
+      cp -r ./config/* $CRAFT_PART_INSTALL/etc/kafka/.
+
+      # Generate configuration
+      sed -i "s:log.dirs=/tmp/kafka-logs:log.dirs=/var/lib/kafka:g" \
+        $CRAFT_PART_INSTALL/etc/kafka/server.properties
+
+  non-root-user:
+    plugin: nil
+    after: [kafka]
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      groupadd -R $CRAFT_OVERLAY -g 1000 kafka
+      useradd -R $CRAFT_OVERLAY -M -r -g kafka -u 1000 kafka
+    override-prime: |
+      craftctl default
+
+      # Give permissions to the required folders
+      chown -R 1000:1000 \
+        opt/kafka \
+        var/lib/kafka \
+        var/log/kafka \
+        etc/kafka
+
+      find opt/kafka -type d -print0 | xargs -0 chmod 0755
+      find opt/kafka -type f -print0 | xargs -0 chmod 0644
+      chmod 0755 opt/kafka/bin/*.sh
+
+      find var/lib/kafka var/log/kafka -type d -print0 | \
+        xargs -0 chmod 0750
+
+      # find etc/kafka -type d -print0 | xargs -0 chmod 0775
+      # find etc/kafka -type f -print0 | xargs -0 chmod 0664
+
+  deb-security-manifest:
+    plugin: nil
+    after: [non-root-user]
+    override-prime: |
+      set -x
+      mkdir -p $CRAFT_PRIME/usr/share/rocks/
+
+      FIELDS=(
+        '${db:Status-Abbrev}'
+        '${binary:Package}'
+        '${Version}'
+        '${source:Package}'
+        '${Source:Version}\n'
+      )
+
+      (
+        IFS="," && \
+        echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
+        dpkg-query --admindir=$CRAFT_PRIME/var/lib/dpkg/ -f "${FIELDS[*]}" -W
+      ) > $CRAFT_PRIME/usr/share/rocks/dpkg.query
