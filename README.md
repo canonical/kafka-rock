@@ -1,13 +1,14 @@
-# Kafka ROCK
+# Kafka rock
 
 [![Tests](https://github.com/canonical/kafka-rock/actions/workflows/ci.yaml/badge.svg?branch=3-22.04)](https://github.com/canonical/kafka-operator/actions/workflows/ci.yaml?query=branch%3A3-22.04)
 [![Release](https://github.com/canonical/kafka-rock/actions/workflows/publish.yaml/badge.svg)](https://github.com/canonical/kafka-rock/actions/workflows/publish.yaml)
 [![Container Registry](https://img.shields.io/badge/Container%20Registry-published-blue)](https://github.com/canonical/kafka-rock/pkgs/container/kafka)
 
-This repository contains the packaging metadata for creating a ROCK of Zookeeper built from Canonical Kafka release artifacts.  For more information on ROCKs, visit the [rockcraft Github](https://github.com/canonical/rockcraft). 
+This repository contains the packaging metadata for creating a rock of Zookeeper built from Canonical Kafka release artifacts.  For more information on rocks, visit the [rockcraft Github](https://github.com/canonical/rockcraft).
 
-## Building the ROCK
-The steps outlined below are based on the assumption that you are building the ROCK with the latest LTS of Ubuntu.  If you are using another version of Ubuntu or another operating system, the process may be different.
+## Building the rock
+
+The steps outlined below are based on the assumption that you are building the rock with the latest LTS of Ubuntu.  If you are using another version of Ubuntu or another operating system, the process may be different.
 
 ### Clone Repository
 ```bash
@@ -30,14 +31,15 @@ sudo lxd init --auto
 ```
 *_NOTE:_* You will need to open a new shell for the group change to take effect (i.e. `su - $USER`)
 
-### Packing and Running the ROCK
+### Packing and Running the rock
+
 ```bash
 rockcraft pack
 sudo skopeo --insecure-policy copy oci-archive:kafka*.rock docker-daemon:<username>/kafka:<tag>
 docker run --rm -it <username>/kafka:<tag>
 ```
 ## License
-The Kafka ROCK is free software, distributed under the Apache
+The Kafka rock is free software, distributed under the Apache
 Software License, version 2.0. See
 [LICENSE](https://github.com/canonical/zookeeper-rock/blob/3.6/stable/LICENSE)
 for more information.
