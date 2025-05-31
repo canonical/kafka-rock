@@ -1,5 +1,6 @@
 name: Publish ROCK
 on:
+  workflow_dispatch:
   push:
     branches:
       - 3-22.04

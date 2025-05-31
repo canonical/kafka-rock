@@ -6,6 +6,7 @@ concurrency:
 
 on:
   pull_request:
+  workflow_dispatch:
   workflow_call:
     outputs:
       rock:
