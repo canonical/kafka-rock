@@ -3,7 +3,7 @@
 ---
 name: kafka  # the name of your ROCK
 base: ubuntu@22.04  # the base environment for this ROCK
-version: '3.9.0'  # just for humans. Semantic versioning is recommended
+version: '3.9.1'  # just for humans. Semantic versioning is recommended
 summary: Apache Kafka OCI Image  # 79 char long summary
 description: |
   Apache Kafka Image from Canonical, based
@@ -47,8 +47,8 @@ parts:
     plugin: nil
     source:
       "https://github.com/canonical/central-uploader/releases/download\
-      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1\
-      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1-20241217045803.tgz"
+      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu0\
+      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu0-20250623103516.tgz"
 
     overlay-packages:
       - openjdk-18-jre-headless
