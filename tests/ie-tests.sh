@@ -33,17 +33,6 @@ function setup() {
   docker network create -d bridge kafka-network > /dev/null
 }
 
-function start_zookeeper() {
-  echo "Start ZooKeeper ..."
-
-  # Start ZooKeeper
-  docker run -d \
-    --rm --network kafka-network --name zookeeper \
-    ubuntu/zookeeper:3.8-22.04_edge > /dev/null
-
-  sleep 5
-}
-
 function start_kafka_vanilla() {
   echo "Start Kafka ..."
 
@@ -51,20 +40,17 @@ function start_kafka_vanilla() {
     --rm --name kafka --network kafka-network -p 9092:9092 \
     $KAFKA_IMAGE > /dev/null
 
-  sleep 5
+  # Format logs.dir
+  docker exec kafka /opt/kafka/bin/kafka-storage.sh format \
+    --standalone --cluster-id LTYn8gxpTcyYI3JNrkAKQw4862534Z \
+    -c /etc/kafka/server.properties
+
+  # Change ownership of default log.dirs to kafka:kafka
+  docker exec kafka chown -R kafka:kafka /tmp/kraft-combined-logs/
+
+  sleep 60
 }
 
-function start_kafka_with_ip() {
-  echo "Start Kafka ..."
-
-  ZK_IP=$(docker network inspect kafka-network | yq '.[0].Containers | map(select(.Name == "zookeeper")) | .[0].IPv4Address')
-
-  echo "Using ZooKeeper IP: $ZK_IP"
-
-  docker run -d \
-    --rm --name kafka --network kafka-network -p 9092:9092 \
-    -e ZOOKEEPER_HOST=$ZK_IP $KAFKA_IMAGE > /dev/null
-}
 
 function is_in() {
     [[ $2 =~ (^|[[:space:]])$1($|[[:space:]]) ]] && return || exit 1
@@ -108,7 +94,7 @@ function checks() {
 }
 
 function teardown() {
-  docker stop kafka zookeeper
+  docker stop kafka
 }
 
 function cleanup() {
@@ -119,15 +105,10 @@ function log() {
     echo "$1"
 }
 
-echo "Tests: 2"
+echo "Tests: 1"
 
 setup && (
   log '*** Vanilla Test ***'
-  ( start_zookeeper && start_kafka_vanilla && checks my-test && \
+  ( start_kafka_vanilla && checks my-test && \
   teardown && log '*** SUCCESS ***' ) || ( teardown && log '*** FAILED ***' )
-) && (
-  log '*** Externally provided ZooKeeper ***'
-  ( start_zookeeper && start_kafka_with_ip && checks my-test-2 && \
-  teardown && log '*** SUCCESS ***' ) || ( teardown && log '*** FAILED ***' )
-) && cleanup || cleanup
-
+) && cleanup
