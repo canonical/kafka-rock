@@ -2,8 +2,8 @@
 # See LICENSE file for licensing details.
 ---
 name: kafka  # the name of your ROCK
-base: ubuntu@22.04  # the base environment for this ROCK
-version: '3.9.1'  # just for humans. Semantic versioning is recommended
+base: ubuntu@24.04  # the base environment for this ROCK
+version: '4.1.1'  # just for humans. Semantic versioning is recommended
 summary: Apache Kafka OCI Image  # 79 char long summary
 description: |
   Apache Kafka Image from Canonical, based
@@ -14,18 +14,13 @@ description: |
   Apache Kafka is an open-source distributed event streaming platform for
   high-performance data pipelines, streaming analytics and integrations.
   Read more on the [Apache Kafka website](https://kafka.apache.org/).
-  This image requires the
-  [Apache Zookeeper image](https://hub.docker.com/r/ubuntu/zookeeper)
-  to run properly.
 license: Apache-2.0  # your application's SPDX license
 
 platforms:  # The platforms this ROCK should be built on and run on
   amd64:
 
 environment:
-  JAVA_HOME: /usr/lib/jvm/java-18-openjdk-amd64
-  ZOOKEEPER_HOST: "zookeeper"
-  ZOOKEEPER_PORT: "2181"
+  JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
   KAFKA_LOG4J_OPTS:
     "-Dlog4j.configuration=file:/etc/kafka/tools-log4j.properties"
 
@@ -33,9 +28,7 @@ services:
   kafka:
     override: replace
     command: >
-      sh -c
-      "/opt/kafka/bin/kafka-server-start.sh /etc/kafka/server.properties
-      --override zookeeper.connect=$ZOOKEEPER_HOST:$ZOOKEEPER_PORT"
+      sh -c "/opt/kafka/bin/kafka-server-start.sh /etc/kafka/server.properties"
     startup: enabled
     user: kafka
     group: kafka
@@ -48,10 +41,10 @@ parts:
     source:
       "https://github.com/canonical/central-uploader/releases/download\
       /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1\
-      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1-20250624151802.tgz"
+      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1-20251120134038.tgz"
 
     overlay-packages:
-      - openjdk-18-jre-headless
+      - openjdk-21-jre-headless
     overlay-script: |
       # Removing cacerts
       rm -vf usr/lib/jvm/java-18-openjdk-amd64/lib/security/cacerts
@@ -80,17 +73,19 @@ parts:
     after: [kafka]
     overlay-script: |
       # Create a user in the $CRAFT_OVERLAY chroot
-      groupadd -R $CRAFT_OVERLAY -g 1000 kafka
-      useradd -R $CRAFT_OVERLAY -M -r -g kafka -u 1000 kafka
+      groupadd -R $CRAFT_OVERLAY -g 584792 kafka
+      useradd -R $CRAFT_OVERLAY -M -r -g kafka -u 584792 kafka
     override-prime: |
       craftctl default
 
       # Give permissions to the required folders
-      chown -R 1000:1000 \
+      # Give permission ot the required folders
+      install -d -o 584792 -g 584792 -m 770 \
         opt/kafka \
         var/lib/kafka \
         var/log/kafka \
-        etc/kafka
+        etc/kafka \
+        var/log/connect
 
       find opt/kafka -type d -print0 | xargs -0 chmod 0755
       find opt/kafka -type f -print0 | xargs -0 chmod 0644

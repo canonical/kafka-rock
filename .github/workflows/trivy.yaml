@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 3-22.04
+      - 4-24.04
   pull_request:
 jobs:
   build:
@@ -14,15 +15,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install skopeo
+      - name: Install rockcraft/skopeo
         run: |
-          sudo snap install --devmode --channel edge skopeo
+          sudo snap install --classic rockcraft
       - uses: actions/download-artifact@v4
         with:
           name: kafka
       - name: Import locally
         run: |
-          sudo skopeo --insecure-policy copy \
+          sudo rockcraft.skopeo --insecure-policy copy \
             oci-archive:${{ needs.build.outputs.rock }} \
             docker-daemon:trivy/kafka:test
 
