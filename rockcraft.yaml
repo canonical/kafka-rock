@@ -40,8 +40,8 @@ parts:
     plugin: nil
     source:
       "https://github.com/canonical/central-uploader/releases/download\
-      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1\
-      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1-20251120134038.tgz"
+      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu2\
+      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu2-20251218143203.tgz"
 
     overlay-packages:
       - openjdk-21-jre-headless
