@@ -4,6 +4,7 @@ on:
     branches:
       - 3-22.04
   pull_request:
+  workflow_dispatch:
 jobs:
   build:
     uses: ./.github/workflows/build.yaml
