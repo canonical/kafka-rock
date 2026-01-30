@@ -45,7 +45,7 @@ services:
 parts:
   kafka:
     plugin: nil
-    source: 
+    source:
       "https://github.com/canonical/central-uploader/releases/download/\
       kafka-3-latest/kafka_2.13-3.9.1-ubuntu3-20260128150448.tgz"
 
