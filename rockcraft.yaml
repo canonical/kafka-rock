@@ -46,7 +46,7 @@ parts:
   kafka:
     plugin: nil
     source:
-      "https://github.com/canonical/central-uploader/releases/download/\
+      "https://github.com/canonical/central-uploader/releases/download\
       /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu3\
       /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu3-20260128150448.tgz"
 
