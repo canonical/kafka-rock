@@ -45,10 +45,7 @@ services:
 parts:
   kafka:
     plugin: nil
-    source:
-      "https://github.com/canonical/central-uploader/releases/download\
-      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1\
-      /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu1-20250624151802.tgz"
+    source: https://github.com/canonical/central-uploader/releases/download/kafka-3-latest/kafka_2.13-3.9.1-ubuntu3-20260128150448.tgz
 
     overlay-packages:
       - openjdk-18-jre-headless
