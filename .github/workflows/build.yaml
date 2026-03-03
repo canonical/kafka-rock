@@ -59,7 +59,7 @@ jobs:
 
   test:
     name: Test Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 60
     needs: build
     steps:
@@ -67,14 +67,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Install skopeo
         run: |
-          sudo snap install --devmode --channel edge skopeo
+          sudo snap install rockcraft --classic
       - uses: actions/download-artifact@v4
         with:
           name: kafka
       - name: Test Image
         run: |
 
-          sudo skopeo --insecure-policy copy \
+          sudo rockcraft.skopeo --insecure-policy copy \
             oci-archive:${{ needs.build.outputs.rock }} \
             docker-daemon:kafka:latest
 
