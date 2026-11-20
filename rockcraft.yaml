@@ -23,7 +23,7 @@ platforms:  # The platforms this ROCK should be built on and run on
   amd64:
 
 environment:
-  JAVA_HOME: /usr/lib/jvm/java-18-openjdk-amd64
+  JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
   ZOOKEEPER_HOST: "zookeeper"
   ZOOKEEPER_PORT: "2181"
   KAFKA_LOG4J_OPTS:
@@ -51,10 +51,10 @@ parts:
       /kafka_2.13-${CRAFT_PROJECT_VERSION}-ubuntu4-20260303081703.tgz"
 
     overlay-packages:
-      - openjdk-18-jre-headless
+      - openjdk-21-jre-headless
     overlay-script: |
       # Removing cacerts
-      rm -vf usr/lib/jvm/java-18-openjdk-amd64/lib/security/cacerts
+      rm -vf usr/lib/jvm/java-21-openjdk-amd64/lib/security/cacerts
 
     override-build: |
       # Base directory skeleton
